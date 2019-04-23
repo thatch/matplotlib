@@ -2300,16 +2300,18 @@ def key_press_handler(event, canvas, toolbar=None):
     toggle_xscale_keys = rcParams['keymap.xscale']
     all_keys = rcParams['keymap.all_axes']
 
-    # toggle fullscreen mode ('f', 'ctrl + f')
-    if event.key in fullscreen_keys:
-        try:
-            canvas.manager.full_screen_toggle()
-        except AttributeError:
-            pass
+    manager = canvas.manager
 
-    # quit the figure (default key 'ctrl+w')
-    if event.key in quit_keys:
-        Gcf.destroy_fig(canvas.figure)
+    if manager is not None:
+        # toggle fullscreen mode ('f', 'ctrl + f')
+        if event.key in fullscreen_keys:
+            canvas.manager.full_screen_toggle()
+        # quit the figure (default key 'ctrl+w')
+        if event.key in quit_keys:
+            if Gcf.get_fig_manager(canvas.manager.num):
+                Gcf.destroy_fig(canvas.figure)
+            else:
+                manager.destroy()
 
     if toolbar is not None:
         # home or reset mnemonic  (default key 'h', 'home' and 'r')
@@ -3264,7 +3266,7 @@ class _Backend(object):
 
     @classmethod
     @cbook._make_keyword_only("3.1", "block")
-    def show(cls, block=None):
+    def show(cls, block=None, *, figures=None):
         """
         Show all figures.
 
@@ -3272,7 +3274,8 @@ class _Backend(object):
         is ``None`` and we are neither in IPython's ``%pylab`` mode, nor in
         `interactive` mode.
         """
-        managers = Gcf.get_all_fig_managers()
+        managers = ([figure.canvas.manager for figure in figures]
+                    if figures is not None else Gcf.get_all_fig_managers())
         if not managers:
             return
         for manager in managers:
