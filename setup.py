@@ -148,7 +148,8 @@ def _download_jquery_to(dest):
     if not os.path.exists(os.path.join(dest, "jquery-ui-1.12.1")):
         _makedirs(dest, exist_ok=True)
         try:
-            buff = download_or_cache(url, sha)
+            with open("jquery-ui-1.12.1.zip", "rb") as f:
+                buff = fread()
         except Exception:
             raise IOError("Failed to download jquery-ui.  Please download " +
                           "{url} and extract it to {dest}.".format(
